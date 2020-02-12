@@ -10,12 +10,18 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
+
+//定义请求间隔，防止服务器方的禁止请求频率过快操作
+//100毫秒
+var rateLimiter = time.Tick(100*time.Millisecond)
 
 /**
 输入一个url 输出byte
  */
 func Fetch(url string) ([]byte,error){
+	<-rateLimiter
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
