@@ -7,6 +7,7 @@ type ConcurrentEngine struct {
 	WorkerCount int
 }
 
+//调度器
 type Scheduler interface {
 	Submit(Request)
 	ConfigureMasterWorkerChan(chan Request)
