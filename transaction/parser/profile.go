@@ -19,8 +19,9 @@ var marriageRe = regexp.MustCompile(`<div class="m-btn purple"[^>]*>`+"(未婚|�
 var incomeRe = regexp.MustCompile(`<div class="m-btn purple"[^>]*>月收入:`+"(\\d+(\\.\\d{1,2})?-\\d+(\\.\\d{1,2})?[百|千|万|百万])"+`</div>`)
 var educationRe = regexp.MustCompile(`<div class="m-btn purple"[^>]*>[\p{Han}]*`+"(小学|初中|中专|高中|高专|大专|本科|硕士|博士|博士后)"+`</div>`)
 var hukouRe = regexp.MustCompile(`<div class="m-btn pink"[^>]*>`+"籍贯:([^<]*)"+`</div>`)
+var idUrlRe = regexp.MustCompile(`http[s]?://[a-z]+.zhenai.com/u/([\d]+)`)
 
-func parseProfile(contents []byte,name string) engine.ParseResult {
+func parseProfile(contents []byte,url string,name string) engine.ParseResult {
 	profile := model.Profile{}
 	age, err := strconv.Atoi(extraString(contents, ageRe))
 	if err == nil{
@@ -36,8 +37,15 @@ func parseProfile(contents []byte,name string) engine.ParseResult {
 	profile.Education = extraString(contents,educationRe)
 	profile.Hukou = extraString(contents,hukouRe)
 	//fmt.Printf("%v",profile)
-	result := engine.ParseResult{
-		Items:    []interface{}{profile},
+	var result = engine.ParseResult{
+		Items: []engine.Item{
+			{
+				Url:     url,
+				Type:    "zhenai",
+				Id:      extraString([]byte(url),idUrlRe),
+				Payload: profile,
+			},
+		},
 	}
 	return result
 }

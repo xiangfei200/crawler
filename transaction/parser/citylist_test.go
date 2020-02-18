@@ -17,15 +17,12 @@ func TestParseCityList(t *testing.T) {
 	}
 	//fmt.Printf("%s\n",contents)
 
-	result := ParseCityList(contents)
+	result := ParseCityList(contents,"")
 	//470城市列表/请求
 	const resultSize = 470
 	//把正确的结果，人工对比后贴进来即可
 	expectedUrls := []string{
 	"","","",
-	}
-	expectedCities := []string{
-		"","","",
 	}
 	if len(result.Requests) != resultSize{
 		t.Errorf("result should have %d "+"results;but had %d",resultSize,len(result.Requests))
@@ -37,11 +34,5 @@ func TestParseCityList(t *testing.T) {
 	}
 	if len(result.Items) != resultSize{
 		t.Errorf("result should have %d "+"results;but had %d",resultSize,len(result.Items))
-	}
-	for i,city := range expectedCities{
-		//将interface转成字符串 .(string)
-		if result.Items[i].(string) != city{
-			t.Errorf("expected city #%d: %s; but "+"was %s",i,city,result.Items[i].(string))
-		}
 	}
 }
