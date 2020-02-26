@@ -2,6 +2,7 @@ package fetcher
 
 import (
 	"bufio"
+	"crawler/distributed/config"
 	"fmt"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -15,12 +16,16 @@ import (
 
 //定义请求间隔，防止服务器方的禁止请求频率过快操作
 //100毫秒
-var rateLimiter = time.Tick(100*time.Millisecond)
+//var rateLimiter = time.Tick(100*time.Millisecond)
+var rateLimiter = time.Tick(time.Second / config.Qps)
 
 /**
 输入一个url 输出byte
- */
-func Fetch(url string) ([]byte,error){
+*/
+func Fetch(url string) ([]byte, error) {
+	// 阻塞接收数据后，忽略从通道返回的数据
+	//执行该语句时将会发生阻塞，直到接收到数据，但接收到的数据会被忽略。
+	//这个方式实际上只是通过通道在 goroutine 间阻塞收发实现并发同步。
 	<-rateLimiter
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -39,9 +44,9 @@ func Fetch(url string) ([]byte,error){
 	//}
 	defer resp.Body.Close()
 	//fmt.Printf("%s",resp.StatusCode)
-	if resp.StatusCode != http.StatusOK{
+	if resp.StatusCode != http.StatusOK {
 		//fmt.Println("Error: status code-",resp.StatusCode)
-		return nil,fmt.Errorf("wrong status code:%d",resp.StatusCode)
+		return nil, fmt.Errorf("wrong status code:%d", resp.StatusCode)
 	}
 	bodyReader := bufio.NewReader(resp.Body)
 	e := determineEncoding(bodyReader)
@@ -53,7 +58,7 @@ func determineEncoding(r *bufio.Reader) encoding.Encoding {
 	// Peek 是针对bufio.NewReader(r)的 先读了1024个字节，读完之后缓存起来，后面再用NewReader读的话就从1025开始读了
 	//bytes, err := bufio.NewReader(r).Peek(1024)
 	bytes, err := r.Peek(1024)
-	if err !=nil{
+	if err != nil {
 		//读取不出来文件的1024字节的话，默认是utf8
 		return unicode.UTF8
 	}
@@ -61,5 +66,3 @@ func determineEncoding(r *bufio.Reader) encoding.Encoding {
 	e, _, _ := charset.DetermineEncoding(bytes, "")
 	return e
 }
-
-

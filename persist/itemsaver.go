@@ -2,6 +2,7 @@ package persist
 
 import (
 	"context"
+	"crawler/distributed/config"
 	"crawler/engine"
 	"errors"
 	"gopkg.in/olivere/elastic.v5"
@@ -10,22 +11,22 @@ import (
 
 func ItemSaver(index string) (chan engine.Item,error) {
 	client, err := elastic.NewClient(
-		elastic.SetURL("http://192.168.99.101:9200"),
+		elastic.SetURL(config.ElasticHost),
 		elastic.SetSniff(false))
 	if err !=nil{
 		return nil,err
 	}
-	out := make(chan engine.Item)
+	outer := make(chan engine.Item)
 
 	go func() {
 		itemCount := 0
 		for {
-			item := <-out
+			item := <-outer
 			log.Printf("Item Saver:got item"+"%d: %v", itemCount, item)
 			itemCount++
 
 			//保存数据到elasticsearch
-			err := save(client,index,item)
+			err := Save(client,index,item)
 			if err != nil{
 				log.Printf("Item saver : error"+"saving item %v:%v",item,err)
 				continue
@@ -34,11 +35,11 @@ func ItemSaver(index string) (chan engine.Item,error) {
 		}
 
 	}()
-	return out,nil
+	return outer,nil
 }
 
 //保存到elasticsearch
-func save(client *elastic.Client,index string,item engine.Item) error{
+func Save(client *elastic.Client,index string,item engine.Item) error{
 	//1.post方式   2.elasticsearch client
 	//http.Post()
 	// must turn off the sniff 关闭客户端集群维护状态，内网无法维护

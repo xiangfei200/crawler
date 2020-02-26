@@ -58,3 +58,27 @@ func extraString(contents []byte,re *regexp.Regexp) string{
 		return ""
 	}
 }
+
+//专门为从用户列表获取用户信息而创建的结构体，这个parse多了个参数，需要中转一下
+type ProfileParser struct {
+	userName string
+}
+
+func (p *ProfileParser) Parse(contents []byte, url string) engine.ParseResult {
+	return parseProfile(contents,url,p.userName)
+}
+
+func (p *ProfileParser) Serialize() (name string, args interface{}) {
+	return "ProfileParser",p.userName
+}
+
+//func NewProfileParser(name string) engine.ParserFunc{
+//	return func(content []byte, url string) engine.ParseResult {
+//		return parseProfile(content,url,name)
+//	}
+//}
+
+//专门为从用户列表获取用户信息而创建的工厂、构造函数
+func NewProfileParser(name string) *ProfileParser{
+	return &ProfileParser{userName:name}
+}

@@ -2,6 +2,7 @@ package persist
 
 import (
 	"context"
+	"crawler/distributed/config"
 	"crawler/engine"
 	"crawler/model"
 	"encoding/json"
@@ -27,13 +28,13 @@ func TestSave(t *testing.T) {
 	//保存数据
 	const index = "data_test"
 	client, err := elastic.NewClient(
-		elastic.SetURL("http://192.168.99.101:9200"),
+		elastic.SetURL(config.ElasticHost),
 		elastic.SetSniff(false))
 	if err != nil {
 		panic(err)
 	}
 
-	err = save(client,index,expected)
+	err = Save(client,index,expected)
 	if err != nil {
 		panic(err)
 	}

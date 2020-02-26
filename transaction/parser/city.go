@@ -26,22 +26,17 @@ func ParseCity(contents []byte,_ string) engine.ParseResult {
 			//	return parseProfile(contents,url,name)
 			//},
 			//函数调用，是引用值，会自动copy。上面的name := string(value[2])都可以去掉，直接用string(value[2])
-			ParserFunc: ProfileParser(name),
+			Parser: NewProfileParser(name),
 		})
 	}
 	matches = realteRe.FindAllSubmatch(contents, -1)
 	for _, m := range matches {
 		result.Requests = append(result.Requests, engine.Request{
 			Url:        string(m[1]),
-			ParserFunc: ParseCity,
+			Parser: engine.NewFuncParser(ParseCity,"ParseCity"),
 		})
 	}
 	//fmt.Printf("Matched found;%d\n",len(all))
 	return result
 }
 
-func ProfileParser(name string) engine.ParserFunc{
-	return func(content []byte, url string) engine.ParseResult {
-		return parseProfile(content,url,name)
-	}
-}
